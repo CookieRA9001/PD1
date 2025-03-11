@@ -3,10 +3,19 @@
     startGameBtn: startGameBtn
     numberListBox: numberListBox
     gameBox: gameBox
+    logBox: logBox
 
     BoxLayout:
         orientation: 'vertical'
         size: (root.width, root.height)
+
+        Label:
+            id: logBox
+            text: ""
+            halign: "left"
+            valign: "bottom"
+            text_size: self.size
+            size: (1,1)
 
         InputBox:
             id: arrayLenghtInput
@@ -33,3 +42,5 @@
                 orientation: 'horizontal'
                 id: numberListBox
                 size_hint: (1, None)
+                spacing: 3
+

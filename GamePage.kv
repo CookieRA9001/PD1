@@ -1,0 +1,35 @@
+<GamePage>
+    arrayLenghtInput: arrayLenghtInput
+    startGameBtn: startGameBtn
+    numberListBox: numberListBox
+    gameBox: gameBox
+
+    BoxLayout:
+        orientation: 'vertical'
+        size: (root.width, root.height)
+
+        InputBox:
+            id: arrayLenghtInput
+            text: str(root.arrayLength)
+            on_focus: root.lengthInput(self.text)
+
+        GameButton:
+            id: startGameBtn
+            text: "START"
+            on_release: root.startGame()
+        
+        BoxLayout:
+            id: gameBox
+            orientation: 'vertical'
+            size_hint: (1, None)
+
+            visible: False
+            size_hint_x: 1 if self.visible else 0
+            opacity: 1 if self.visible else 0
+            disabled: not self.visible
+
+            BoxLayout:
+                height: 40
+                orientation: 'horizontal'
+                id: numberListBox
+                size_hint: (1, None)

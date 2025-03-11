@@ -1,0 +1,8 @@
+<GameButton>
+    size_hint: (1, None)
+    height: 40
+
+    visible: True
+    size_hint_x: 1 if self.visible else 0
+    opacity: 1 if self.visible else 0
+    disabled: not self.visible

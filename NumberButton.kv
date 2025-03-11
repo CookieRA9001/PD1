@@ -1,0 +1,8 @@
+<NumberButton>
+    count: 15
+    size_hint: (1/self.count, None)
+
+    is_selected: False
+    is_neibor: True
+    background_color: (0.1,0.9,0.1,1) if self.is_selected else ((0.9,0.9,0.9,1) if self.is_neibor else (0.4,0.4,0.4,1))
+    on_release: self.numSelect()

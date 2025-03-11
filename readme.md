@@ -11,3 +11,8 @@ Spēles sākumā ir dota ģenerētā skaitļu virkne. Spēlētāji izpilda gāji
 * nodzēst to skaitli, kas ir palicis bez pāra un atņemt vienu punktu no kopīga punktu skaita.  
 
 Spēle beidzas, kad skaitļu virknē paliek viens skaitlis. Spēles beigās banka tiek pieskaitīta kopējam punktu skaitam. Ja gan skaitļu virknē esošais skaitlis, gan kopīgs punktu skaits ir pāra skaitlis, uzvar spēlētājs, kurš uzsāka spēli. Ja gan skaitļu virknē esošais skaitlis, gan kopīgs punktu skaits ir nepāra skaitlis, uzvar otrais spēlētājs. Visos pārejos gadījumos rezultāts ir neizšķirts. 
+
+
+**Izmaiņu ieteikumi**
+* Noņemt "spēles banku". Tā neko nedara un tad beigās tāpat tiek vienkārši pieskaitīta kopējam skaitlim.
+* Punkts par kombināciju ir nevajadzīgs, jo to uzreiz atņem par to ka ir palicis viens cipars bez pāra, kuru noņem nost no saraksta un dod -1 punktu.

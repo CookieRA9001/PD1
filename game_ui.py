@@ -42,18 +42,24 @@ class NumberButton(BoxLayout):
 
         if self.value[1] == -1:
             self.game_page.removePair(self.index)
-            self.game_page.log("Removing solo number")
+            self.game_page.values.pop(self.index)
+            self.game_page.log(f"Removing solo number -> {self.value[0]}")
+            #self.game_page.addPoints(-1)
     
     def numSelect(self):
-        if self.game_page.selected_index == -1:
-            self.is_selected = True
-            self.game_page.selected_index = self.index
-        else:
-            print("Inactive")
+        new_value = self.value[0] + self.value[1]
+        self.game_page.log(f"Choosen pair {self.value}, gained {new_value}")
+        #self.game_page.addPoints(1)
+        if new_value >= 7:
+            new_value -= 6
+            self.game_page.log(f"New number over 6: {new_value+6} -> {new_value}")
+            self.game_page.addPoints(1)
+        self.game_page.values[self.index] = (new_value,-1)
+        self.game_page.regenerate()
 
     def update(self, new_index):
         self.index = new_index
-        self.count = self.game_page.arrayLength
+        self.count = len(self.game_page.values)*2
         
 # Spēļu texta lauka klase standartizētam noformējumam
 class InputBox(TextInput):
@@ -66,7 +72,7 @@ class GamePage(Widget):
     values = []
     points = []
     numberBtns = []
-    selected_index = -1
+    point_count = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -89,7 +95,6 @@ class GamePage(Widget):
         self.numberBtns = []
 
         for i in self.values:
-            print(i)
             numberBtn = NumberButton(self)
             self.numberBtns.append(numberBtn)
             self.numberListBox.add_widget(numberBtn)
@@ -102,9 +107,38 @@ class GamePage(Widget):
         for nb in self.numberBtns:
             nb.update(i)
             i += 1
-        print("removed")
-        print(numIndex)
 
+    def addPoints(self, points):
+        self.point_count += points
+        self.log(f"Points: {self.point_count} [{("+" if points > 0 else "")}{points}]")
+    
+    def regenerate(self):
+        temp = []
+        for i in self.values:
+            temp.append(i[0])
+            if i[1] != -1:
+                temp.append(i[1])
+        
+        l = len(temp)
+        self.values = [(temp[x*2],temp[x*2+1]) for x in range((int)(l/2))]
+        if l%2 != 0:
+            self.values.append((temp[l-1],-1))
+        
+        self.numberListBox.clear_widgets()
+
+        if l == 1:
+            num_is_pair = temp[0]%2==0
+            point_is_pair = self.point_count%2==0
+            self.log(f"No more numbers. Final number: [{temp[0]}]. Points: [{self.point_count}]. Winner - {"FIRST" if num_is_pair and point_is_pair else "SECOND" if not num_is_pair and not point_is_pair else "TIE"}")
+            return
+        
+        self.numberBtns = []
+        for i in self.values:
+            numberBtn = NumberButton(self)
+            self.numberBtns.append(numberBtn)
+            self.numberListBox.add_widget(numberBtn)
+            numberBtn.setup(i)
+        
     def log(self, msg):
         self.logBox.text += "\n" + msg
 

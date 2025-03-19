@@ -4,6 +4,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.behaviors import HoverBehavior
 from kivy.lang import Builder
 from kivy.config import Config
 from kivy.properties import BoundedNumericProperty
@@ -24,7 +25,7 @@ class GameButton(Button):
         super().__init__(**kwargs)
 
 # Ciparu pāris
-class NumberButton(BoxLayout):
+class NumberButton(BoxLayout, HoverBehavior):
     value = (0,0)
     index = -1
     game_page = None
@@ -40,21 +41,27 @@ class NumberButton(BoxLayout):
         self.num1.text = str(self.value[0])
         self.num2.text = str(self.value[1])
 
-        if self.value[1] == -1:
-            self.game_page.removePair(self.index)
-            self.game_page.values.pop(self.index)
-            self.game_page.log(f"Removing solo number -> {self.value[0]}")
-            #self.game_page.addPoints(-1)
+        if self.value[1] == 0:
+            self.is_leftover = True
+        #     self.game_page.removePair(self.index)
+        #     self.game_page.values.pop(self.index)
+        #     self.game_page.log(f"Removing solo number -> {self.value[0]}")
+        #     #self.game_page.addPoints(-1)
     
     def numSelect(self):
-        new_value = self.value[0] + self.value[1]
-        self.game_page.log(f"Choosen pair {self.value}, gained {new_value}")
-        #self.game_page.addPoints(1)
-        if new_value >= 7:
-            new_value -= 6
-            self.game_page.log(f"New number over 6: {new_value+6} -> {new_value}")
+        if self.value[1] == 0:
+            self.game_page.log(f"Remove leftover {self.value[0]}")
+            self.game_page.addPoints(-1)
+            self.game_page.values[self.index] = (-1,-1)
+        else:
+            new_value = self.value[0] + self.value[1]
+            self.game_page.log(f"Choosen pair {self.value}, gained {new_value}")
             self.game_page.addPoints(1)
-        self.game_page.values[self.index] = (new_value,-1)
+            if new_value >= 7:
+                new_value -= 6
+                self.game_page.log(f"New number over 6: {new_value+6} -> {new_value}")
+                self.game_page.addPoints(1)
+            self.game_page.values[self.index] = (new_value,-1)
         self.game_page.regenerate()
 
     def update(self, new_index):
@@ -91,7 +98,7 @@ class GamePage(Widget):
 
         self.values = [(random.randint(1,6),random.randint(1,6)) for x in range((int)(self.arrayLength/2))]
         if self.arrayLength%2 != 0:
-            self.values.append((random.randint(1,6),-1))
+            self.values.append((random.randint(1,6),0))
         self.numberBtns = []
 
         for i in self.values:
@@ -115,14 +122,15 @@ class GamePage(Widget):
     def regenerate(self):
         temp = []
         for i in self.values:
-            temp.append(i[0])
-            if i[1] != -1:
+            if i[0] > 0:
+                temp.append(i[0])
+            if i[1] > 0:
                 temp.append(i[1])
         
         l = len(temp)
         self.values = [(temp[x*2],temp[x*2+1]) for x in range((int)(l/2))]
         if l%2 != 0:
-            self.values.append((temp[l-1],-1))
+            self.values.append((temp[l-1],0))
         
         self.numberListBox.clear_widgets()
 

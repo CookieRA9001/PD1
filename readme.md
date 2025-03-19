@@ -15,4 +15,3 @@ Spēle beidzas, kad skaitļu virknē paliek viens skaitlis. Spēles beigās bank
 
 **Izmaiņu ieteikumi**
 * Noņemt "spēles banku". Tā neko nedara un tad beigās tāpat tiek vienkārši pieskaitīta kopējam skaitlim.
-* Punkts par kombināciju ir nevajadzīgs, jo to uzreiz atņem par to ka ir palicis viens cipars bez pāra, kuru noņem nost no saraksta un dod -1 punktu.

@@ -43,10 +43,6 @@ class NumberButton(BoxLayout, HoverBehavior):
 
         if self.value[1] == 0:
             self.is_leftover = True
-        #     self.game_page.removePair(self.index)
-        #     self.game_page.values.pop(self.index)
-        #     self.game_page.log(f"Removing solo number -> {self.value[0]}")
-        #     #self.game_page.addPoints(-1)
     
     def numSelect(self):
         if self.value[1] == 0:
@@ -92,8 +88,8 @@ class GamePage(Widget):
         self.arrayLenghtInput.text = str(self.arrayLength)
     
     def startGame(self):
-        self.arrayLenghtInput.visible = False
-        self.startGameBtn.visible = False
+        self.startSettingBox.opacity = 0
+        self.startSettingBox.disabled = True
         self.gameBox.visible = True
 
         self.values = [(random.randint(1,6),random.randint(1,6)) for x in range((int)(self.arrayLength/2))]

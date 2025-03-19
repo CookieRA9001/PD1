@@ -4,28 +4,54 @@
     numberListBox: numberListBox
     gameBox: gameBox
     logBox: logBox
+    dropdownStartingPlayer: dropdownStartingPlayer
+    dropdownAILogic: dropdownAILogic
+    startSettingBox: startSettingBox
 
     BoxLayout:
         orientation: 'vertical'
         size: (root.width, root.height)
 
-        Label:
-            id: logBox
-            text: ""
-            halign: "left"
-            valign: "bottom"
-            text_size: self.size
-            size: (1,1)
+        BoxLayout:
+            id: startSettingBox
+            size: (root.width, root.height)
+            orientation: 'vertical'
 
-        InputBox:
-            id: arrayLenghtInput
-            text: str(root.arrayLength)
-            on_focus: root.lengthInput(self.text)
+            Label:
+                id: logBox
+                text: ""
+                halign: "left"
+                valign: "bottom"
+                text_size: self.size
+                size: (1,1)
 
-        GameButton:
-            id: startGameBtn
-            text: "START"
-            on_release: root.startGame()
+            InputBox:
+                id: arrayLenghtInput
+                text: str(root.arrayLength)
+                on_focus: root.lengthInput(self.text)
+                size_hint: (1, None)
+                height: 40
+
+            Spinner:
+                id: dropdownStartingPlayer
+                text: 'First'
+                values: ('First', 'Second')
+                size_hint: (1, None)
+                height: 40
+
+            Spinner:
+                id: dropdownAILogic
+                text: 'MinMax'
+                values: ('MinMax', 'AlfaBeta')
+                size_hint: (1, None)
+                height: 40
+
+            GameButton:
+                id: startGameBtn
+                text: "START"
+                on_release: root.startGame()
+                size_hint: (1, None)
+                height: 40
         
         BoxLayout:
             id: gameBox

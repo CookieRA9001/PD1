@@ -7,66 +7,120 @@
     dropdownStartingPlayer: dropdownStartingPlayer
     dropdownAILogic: dropdownAILogic
     startSettingBox: startSettingBox
-
+    gameStateBox: gameStateBox
+    color_background: 0.37, 0.22, 0.46, 1 
+    color_secondary: 0.25, 0.11, 0.27, 1
+    color_button: 0.2, 0.1, 0.2, 1
+    
     BoxLayout:
         orientation: 'vertical'
         size: (root.width, root.height)
-
-        BoxLayout:
-            id: startSettingBox
-            size: (root.width, root.height)
-            orientation: 'vertical'
-
-            Label:
-                id: logBox
-                text: ""
-                halign: "left"
-                valign: "bottom"
-                text_size: self.size
-                size: (1,1)
-
-            InputBox:
-                id: arrayLenghtInput
-                text: str(root.arrayLength)
-                on_focus: root.lengthInput(self.text)
-                size_hint: (1, None)
-                height: 40
-
-            Spinner:
-                id: dropdownStartingPlayer
-                text: 'First'
-                values: ('First', 'Second')
-                size_hint: (1, None)
-                height: 40
-
-            Spinner:
-                id: dropdownAILogic
-                text: 'MinMax'
-                values: ('MinMax', 'AlfaBeta')
-                size_hint: (1, None)
-                height: 40
-
-            GameButton:
-                id: startGameBtn
-                text: "START"
-                on_release: root.startGame()
-                size_hint: (1, None)
-                height: 40
         
-        BoxLayout:
-            id: gameBox
-            orientation: 'vertical'
-            size_hint: (1, None)
+        canvas.before:
+            Color:
+                rgba: root.color_background
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
-            visible: False
-            size_hint_x: 1 if self.visible else 0
+        GameStateBox:
+            id: gameStateBox
+
+        BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: root.color_secondary
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            id: startSettingBox
+            orientation: 'vertical'                     
+            size_hint: (1, 0.2) if self.visible else (0, None)
+            height: 50 if self.visible else 0
+            visible: True
             opacity: 1 if self.visible else 0
             disabled: not self.visible
 
             BoxLayout:
-                height: 40
+                orientation: 'horizontal'
+                spacing: 45
+                size_hint: (1, 1)
+                padding: 20
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: (0.25, 1)
+
+                    Label:
+                        text: "Sākuma spēlētājs"
+
+                    Spinner:
+                        id: dropdownStartingPlayer
+                        text: 'Cilvēks'
+                        values: ('Cilvēks', 'Dators')
+                        size_hint: (1, None)
+                        height: '40dp'
+                        background_color: root.color_button
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: (0.25, 1)
+
+                    Label: 
+                        text: "AI algoritms"
+
+                    Spinner:
+                        id: dropdownAILogic
+                        text: 'MinMax'
+                        values: ('MinMax', 'AlfaBeta')
+                        size_hint: (1, None)
+                        height: '40dp'
+                        background_color: root.color_button
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: (0.25, 1)
+
+                    Label:
+                        id: logBox
+                        text: "Skaitļu skaits (5-25)"
+
+                    InputBox:
+                        anchor_x: 'left'
+                        anchor_y: 'top'
+                        id: arrayLenghtInput
+                        text: str(root.arrayLength)
+                        on_focus: root.lengthInput(self.text)
+                        size_hint: (1, None)  
+
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: (0.25, 1)
+
+                    GameButton:
+                        id: startGameBtn
+                        text: "START"
+                        on_release: root.startGame()
+                        background_color: root.color_button
+
+        BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: root.color_secondary
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            id: gameBox
+            orientation: 'vertical'
+            visible: False
+            size_hint: (1, 0.2) if self.visible else (0,0)
+            height: 150 if self.visible else 0
+            padding: 40
+
+            BoxLayout:
                 orientation: 'horizontal'
                 id: numberListBox
-                size_hint: (1, None)
-                spacing: 3
-
+                size_hint: (1, 1)
+                spacing: 10

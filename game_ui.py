@@ -8,6 +8,7 @@ from kivymd.uix.behaviors import HoverBehavior
 from kivy.lang import Builder
 from kivy.config import Config
 from kivy.properties import BoundedNumericProperty
+from AI_player_logic import AIPlayer, GameState;
 
 # Kivi aplikācijas iestatījumi
 Config.set('graphics', 'width', '800')
@@ -76,7 +77,6 @@ class GameStateBox(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
 
     def update(self, totalPoints, lastMove):
         self.totalPoints = totalPoints
@@ -117,10 +117,13 @@ class GamePage(Widget):
         self.gameStateBox.gameStateBody.visible = True
         self.gameBox.visible = True
         
+        # Ja sāk cilvēks
         if self.dropdownStartingPlayer.text == self.players[0]:
             self.startingPlayer = 0
+        # Ja sāk dators, tad uzreiz veidojam spēles koka ģenerēšanu
         else:
             self.startingPlayer = 1
+
 
         self.gameStateBox.gameStateTitle.text = self.players[self.startingPlayer] + " gājiens"
         self.values = [(random.randint(1,6),random.randint(1,6)) for x in range((int)(self.arrayLength/2))]

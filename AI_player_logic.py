@@ -1,7 +1,6 @@
 import copy
 from kivy.logger import Logger
 from kivy.clock import Clock
-from functools import partial
 
 class StateNode():
     parentNode = None
@@ -17,6 +16,10 @@ class StateNode():
 
     def addChildNode(self, childNode):
         childNode.parentNode = self
+        for child in self.childrenNodes:
+            if child.gameState == childNode.gameState:
+                return
+            
         self.childrenNodes.append(childNode)
 
     def getChildrenNodes(self):
@@ -70,7 +73,7 @@ class AIPlayer:
 
     def updateGameState(self, newGameState):
         self.gameState = newGameState
-        self.gameTree = self.generateGameTree()
+        Clock.schedule_once(self.generateGameTreeWrapper, 0)
     
     def makeMove(self, gameState, pair, pairIndex):
         newGameState = copy.deepcopy(gameState)
@@ -102,6 +105,10 @@ class AIPlayer:
                 newGameState.numberPairs.append((tempPairs[0], -1))
 
         return newGameState
+    
+    def generateGameTreeWrapper(self, dt):
+        self.gameTree = self.generateGameTree()
+        return
 
     def generateGameTree(self, rootNode = None):
         if rootNode is None or not isinstance(rootNode, StateNode):
@@ -126,17 +133,62 @@ class AIPlayer:
 
     # Heiristiskā novērtējuma funkcija. 
     # Vēl jāuzlabo
+    # Vajadzētu ņemt vērā, vai ir vajadzīgs izvēlēties pāri, kurš maina punktus pāra/nepāra
+    # atkarībā no atlikušā gājienu
     def evaluateEndNode(self, node):
         startingPlayer = self.gameState.startingPlayer
         heuristic_pair = 0
         heuristic_odd = 0
 
+        # pārbaude, vai tas ir spēles beigas stāvoklis
+        if len(node.gameState.numberPairs) == 1 and node.gameState.numberPairs[0][1] == -1:
+            isPointsEven = node.gameState.points % 2 == 0
+            isResultNumberEven = node.gameState.numberPairs[0][0] % 2 == 0
+
+            if startingPlayer == 1:
+                # Uzvarošs gājiens
+                if isPointsEven and isResultNumberEven:
+                    node.heuristic_value = 100
+                # Zaudējošs gājiens
+                elif not isPointsEven and not isResultNumberEven:
+                    node.heuristic_value = -100
+                # Neizšķirts gājiens
+                else:
+                    node.heuristic_value = 0
+            else:
+                # Zaudējošs gājiens
+                if isPointsEven and isResultNumberEven:
+                    node.heuristic_value = -100
+                # Uzvarošs gājiens
+                elif not isPointsEven and not isResultNumberEven:
+                    node.heuristic_value = 100
+                # Neizšķirts gājiens
+                else:
+                    node.heuristic_value = 0
+
+            return node
+
+        # totalNumbersCount = len(node.gameState.numberPairs) * 2
+        # if node.gameState.numberPairs[totalNumbersCount - 1][1] == 0:
+        #    totalNumbersCount -= 1
+
+        # turnsLeft = totalNumbersCount - 1
+
+        # twoPointChoiceValue = 0
+        # if (node.gameState.points + turnsLeft) % 2 == 0:
+        #    twoPointChoiceValue = 1
+        # else:
+        #    twoPointChoiceValue = -1
+
+        # if startingPlayer == 0:
+        #    twoPointChoiceValue *= -1
+
         if node.gameState.points % 2 == 0:
-            heuristic_pair += 1
-            heuristic_odd -= 1
+            heuristic_pair += 1 # * (twoPointChoiceValue * turnsLeft)
+            heuristic_odd -= 1 # * (twoPointChoiceValue * turnsLeft)
         else:
-            heuristic_odd += 1
-            heuristic_pair -= 1
+            heuristic_odd += 1 # * (twoPointChoiceValue * turnsLeft)
+            heuristic_pair -= 1 # * (twoPointChoiceValue * turnsLeft)
         
         for pair in node.gameState.numberPairs:
             if pair[1] != -1 and pair[1] != 0:
@@ -147,8 +199,8 @@ class AIPlayer:
                 else:
                     heuristic_odd += 1
                     heuristic_pair -= 1
-
-        if startingPlayer == 0:
+                    
+        if startingPlayer == 1:
             node.heuristic_value = heuristic_pair 
         else:
             node.heuristic_value = heuristic_odd
@@ -190,6 +242,7 @@ class AIPlayer:
             
         bestMove = None
         for childNode in rootNode.getChildrenNodes():
+            Logger.info(f"Child node state: {childNode.gameState.numberPairs}")
             evaluatedNode = self.alphaBeta(childNode, not maximizingPlayer, alpha, beta)
             if maximizingPlayer:
                 if evaluatedNode.heuristic_value > bestHeuristicValue:

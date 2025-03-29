@@ -11,6 +11,7 @@ from kivy.properties import BoundedNumericProperty
 from AI_player_logic import AIPlayer, GameState;
 from kivy.clock import Clock
 from kivy.logger import Logger
+
 # Kivi aplikācijas iestatījumi
 Config.set('graphics', 'width', '800')
 Config.set('graphics', 'height', '600')
@@ -149,11 +150,15 @@ class GamePage(Widget):
 
         newGameState = GameState(values, 0, 0, self.startingPlayer)
         self.currentPlayer = self.startingPlayer
+        if self.startingPlayer == 0:
+            self.numberListBox.disabled = False
+        
         self.gameStateBox.refreshNewState(newGameState, self.players[self.startingPlayer])
         self.aiPlayer = AIPlayer(self.gameStateBox.gameState, self.dropdownAILogic.text)
 
         if self.startingPlayer == 1:
             self.numberListBox.disabled = True
+            Clock.schedule_once(self.aiPlayer.generateGameTreeWrapper, 0)
             Clock.schedule_once(self.aiPlayer.findBestMove, 0)
             Clock.schedule_once(self.numberBtns[self.aiPlayer.bestMoveIndex].numSelect, 1)
 

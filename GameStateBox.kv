@@ -1,0 +1,116 @@
+<GameStateBox>
+    gameStateTitle: gameStateTitle
+    gameStateBody: gameStateBody
+    totalPointsBox: totalPointsBox
+    lastMoveBox: lastMoveBox
+    lastMoveNum1: lastMoveNum1
+    lastMoveNum2: lastMoveNum2
+    color_background: 0.4, 0.2, 0.4, 1 
+    color_secondary: 0.25, 0.11, 0.27, 1
+    color_button: 0.6, 0.1, 0.2, 0.8
+
+    canvas.before:
+        Color:
+            rgba: root.color_background
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    orientation: 'vertical'
+    size_hint: (1, 0.8)
+
+    BoxLayout: 
+        canvas.before:
+            Color:
+                rgba: root.color_background
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        orientation: 'horizontal'
+        size_hint: (1, 0.2)
+        padding: (200, 20)
+
+        Label:
+            canvas.before:
+                Color:
+                    rgba: root.color_secondary
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            id: gameStateTitle
+            text: "Skaitļu spēle"
+            size_hint: (0.3, 1)
+            font_size: '32sp'
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint: (1, 0.6)
+        id: gameStateBody
+        visible: False
+        spacing: 100
+        opacity: 1 if self.visible else 0
+        padding: 30
+
+        BoxLayout:
+            canvas.before:
+                Color:
+                    rgba: root.color_secondary
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            orientation: 'vertical'
+            size_hint: (0.3, 0.75)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            opacity: self.parent.opacity
+            border: 30, 30, 30, 30
+
+            Label:
+                id: lastMoveBox
+                text: "Pēdējais gājiens"
+                size_hint: (0.5, 1)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                font_size: '24sp'
+                opacity: self.parent.opacity
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (0.3, 0.5)
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                padding: 0, 0, 0, 10
+
+                GameButton:
+                    id: lastMoveNum1
+                    text: "0"
+                    size_hint: (0.5, 1)
+                    font_size: '24sp'
+                    opacity: self.parent.opacity
+                    background_color: 0.6, 0.1, 0.2, 1
+
+                GameButton:
+                    id: lastMoveNum2
+                    text: "0"
+                    size_hint: (0.5, 1)
+                    font_size: '24sp'
+                    opacity: self.parent.opacity
+                    background_color: 0.6, 0.1, 0.2, 1
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (0.25, 0.3)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            opacity: self.parent.opacity
+
+            Label:
+                canvas.before:
+                    Color:
+                        rgba: root.color_secondary
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                id: totalPointsBox
+                text: "Punkti : 0"
+                font_size: '24sp'
+                opacity: self.parent.opacity

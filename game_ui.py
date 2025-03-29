@@ -18,6 +18,7 @@ Builder.load_file('InputBox.kv')
 Builder.load_file('GameButton.kv')
 Builder.load_file('NumberButton.kv')
 Builder.load_file('GamePage.kv')
+Builder.load_file('GameStateBox.kv')
 
 # Spēļu pogu klase standartizētam noformējumam
 class GameButton(Button):
@@ -45,20 +46,20 @@ class NumberButton(BoxLayout, HoverBehavior):
             self.is_leftover = True
     
     def numSelect(self):
+        self.game_page.gameStateBox.lastMoveNum1.text = str(self.value[0])
+        self.game_page.gameStateBox.lastMoveNum2.text = str(self.value[1])
         if self.value[1] == 0:
-            self.game_page.log(f"Remove leftover {self.value[0]}")
             self.game_page.addPoints(-1)
             self.game_page.values[self.index] = (-1,-1)
         else:
             new_value = self.value[0] + self.value[1]
-            self.game_page.log(f"Choosen pair {self.value}, gained {new_value}")
             self.game_page.addPoints(1)
             if new_value >= 7:
                 new_value -= 6
-                self.game_page.log(f"New number over 6: {new_value+6} -> {new_value}")
                 self.game_page.addPoints(1)
             self.game_page.values[self.index] = (new_value,-1)
         self.game_page.regenerate()
+        self.game_page.gameStateBox.update(self.game_page.point_count, self.value)
 
     def update(self, new_index):
         self.index = new_index
@@ -69,13 +70,35 @@ class InputBox(TextInput):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class GameStateBox(BoxLayout):
+    totalPoints = 0
+    lastMove = (0, 0)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+
+    def update(self, totalPoints, lastMove):
+        self.totalPoints = totalPoints
+        self.lastMove = lastMove
+        self.totalPointsBox.text = "Punktu skaits: " + str(self.totalPoints)
+        self.lastMoveBox.text = "Pēdējais gājiens: " + str(self.lastMove)
+
+
 # Spēles galvenā "lapa"
 class GamePage(Widget):
-    arrayLength = BoundedNumericProperty(15, min=15, max=25, errorhandler=lambda x: 25 if x > 25 else 15)
+    arrayLength = BoundedNumericProperty(5, min=5, max=25, errorhandler=lambda x: 25 if x > 25 else 5)
+    players = { 
+        0:'Cilvēks',
+        1:'Dators' 
+    }
     values = []
     points = []
     numberBtns = []
     point_count = 0
+    startingPlayer = 0
+    gameHistory = []
+    currentPlayer = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -90,8 +113,16 @@ class GamePage(Widget):
     def startGame(self):
         self.startSettingBox.opacity = 0
         self.startSettingBox.disabled = True
+        self.startSettingBox.visible = False
+        self.gameStateBox.gameStateBody.visible = True
         self.gameBox.visible = True
+        
+        if self.dropdownStartingPlayer.text == self.players[0]:
+            self.startingPlayer = 0
+        else:
+            self.startingPlayer = 1
 
+        self.gameStateBox.gameStateTitle.text = self.players[self.startingPlayer] + " gājiens"
         self.values = [(random.randint(1,6),random.randint(1,6)) for x in range((int)(self.arrayLength/2))]
         if self.arrayLength%2 != 0:
             self.values.append((random.randint(1,6),0))
@@ -113,7 +144,6 @@ class GamePage(Widget):
 
     def addPoints(self, points):
         self.point_count += points
-        self.log(f"Points: {self.point_count} [{("+" if points > 0 else "")}{points}]")
     
     def regenerate(self):
         temp = []
@@ -133,9 +163,21 @@ class GamePage(Widget):
         if l == 1:
             num_is_pair = temp[0]%2==0
             point_is_pair = self.point_count%2==0
-            self.log(f"No more numbers. Final number: [{temp[0]}]. Points: [{self.point_count}]. Winner - {"FIRST" if num_is_pair and point_is_pair else "SECOND" if not num_is_pair and not point_is_pair else "TIE"}")
+            winner = "Neizšķirts!"
+            if num_is_pair == point_is_pair:
+                winner = self.players[self.startingPlayer] + " uzvarēja!"
+                self.updateGameHistory(self.startingPlayer)
+            elif not num_is_pair and not point_is_pair:
+                winner = self.players[1-self.startingPlayer] + " uzvarēja!"
+                self.updateGameHistory(1-self.startingPlayer)
+
+            self.gameStateBox.gameStateTitle.text = winner 
+            self.gameHistory.append(winner)
+            self.restoreStartingState()
             return
         
+        self.currentPlayer = 1 - self.currentPlayer
+        self.gameStateBox.gameStateTitle.text = self.players[self.currentPlayer] + " gājiens"
         self.numberBtns = []
         for i in self.values:
             numberBtn = NumberButton(self)
@@ -143,8 +185,17 @@ class GamePage(Widget):
             self.numberListBox.add_widget(numberBtn)
             numberBtn.setup(i)
         
-    def log(self, msg):
-        self.logBox.text += "\n" + msg
+    def updateGameHistory(self, winner):
+        self.gameHistory.append({'winner': winner, 'points': self.point_count})
+
+    def restoreStartingState(self):
+        self.gameStateBox.gameStateBody.visible = False
+        self.startSettingBox.visible = True
+        self.gameBox.visible = False
+        self.point_count = 0
+        self.values = []
+        self.numberListBox.clear_widgets()
+        self.numberBtns = []
 
 # Kivi aplikācijas klase
 class AIGameApp(App):

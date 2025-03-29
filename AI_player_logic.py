@@ -1,13 +1,22 @@
+import copy
+from kivy.logger import Logger
+from kivy.clock import Clock
+from functools import partial
+
 class StateNode():
     parentNode = None
+    childrenNodes = []
     gameState = None
     heuristic_value = 0
+    is_end_node = False
 
-    def __init__(self, parentNode, gameState):
-        self.parentNode = parentNode
+    def __init__(self, gameState):
+        self.childrenNodes = []
+        self.is_end_node = False
         self.gameState = gameState
 
     def addChildNode(self, childNode):
+        childNode.parentNode = self
         self.childrenNodes.append(childNode)
 
     def getChildrenNodes(self):
@@ -22,56 +31,180 @@ class GameState:
     depth = 0
     startingPlayer = 0
 
-    def __init__(self, numberPairs, points, depth):
+    def __init__(self, numberPairs, points, depth, startingPlayer):
         self.numberPairs = numberPairs
         self.points = points
         self.depth = depth
+        self.startingPlayer = startingPlayer
 
+    def __eq__(self, other):
+        if self.numberPairs == other.numberPairs and self.points == other.points and self.depth == other.depth and self.startingPlayer == other.startingPlayer:
+            return True
+
+        return False
 
 class AIPlayer:    
-    maxTreeDepth = 5
+    maxTreeDepth = 3
     gameState = None
+    gameTree = None
+    algorithm = None
+    bestMoveIndex = 0
 
-    def __init__(self, gameState):
+    def __init__(self, gameState, algorithm):
         self.gameState = gameState
+        self.algorithm = algorithm
+        self.gameTree = self.generateGameTree()
+        self.maxTreeDepth = self.gameState.depth + 3
 
-    def getBestMove(self):
-        return self.gameState.getBestMove()
+    def findBestMove(self, dt):
+        if self.algorithm == "MinMax":
+            bestMoveNode = self.minmax(self.gameTree, True)
+            self.bestMoveIndex = self.gameTree.getChildrenNodes().index(bestMoveNode)
+            return self.bestMoveIndex
+        
+        alpha = float('-inf')
+        beta = float('inf')
+        bestMoveNode = self.alphaBeta(self.gameTree, True, alpha, beta)
+        self.bestMoveIndex = self.gameTree.getChildrenNodes().index(bestMoveNode)
+        return 
 
     def updateGameState(self, newGameState):
         self.gameState = newGameState
+        self.gameTree = self.generateGameTree()
+    
+    def makeMove(self, gameState, pair, pairIndex):
+        newGameState = copy.deepcopy(gameState)
+        newGameState.depth += 1
+        if pair[1] == 0:
+            newGameState.points -= 1
+            newGameState.numberPairs[pairIndex] = (-1,-1)
+        else:
+            new_value = pair[0] + pair[1]
+            newGameState.points += 1
+            if new_value >= 7:
+                new_value -= 6
+                newGameState.points += 1
+            newGameState.numberPairs[pairIndex] = (new_value,-1)
 
-    def generateGameTree(self, rootNode):
-        if rootNode is None:
-            rootNode = StateNode(None, self.gameState)
+        tempPairs = []
+        for pair in newGameState.numberPairs:
+            if pair[0] > 0:
+                tempPairs.append(pair[0])
+            if pair[1] > 0:
+                tempPairs.append(pair[1])
+
+        l = len(tempPairs)
+        newGameState.numberPairs = [(tempPairs[x*2],tempPairs[x*2+1]) for x in range((int)(l/2))]
+        if l%2 != 0:
+            if l != 1:
+                newGameState.numberPairs.append((tempPairs[l-1], 0))
+            else:
+                newGameState.numberPairs.append((tempPairs[0], -1))
+
+        return newGameState
+
+    def generateGameTree(self, rootNode = None):
+        if rootNode is None or not isinstance(rootNode, StateNode):
+            rootNode = StateNode(self.gameState)
 
         if rootNode.gameState.depth >= self.maxTreeDepth:
             return rootNode
         
-        for pair in rootNode.gameState.numberPairs:
-            newGameState = self.gameState.makeMove(pair)
-            childNode = StateNode(rootNode, newGameState)
+        for index, pair in enumerate(rootNode.gameState.numberPairs):
+            newGameState = self.makeMove(rootNode.gameState, pair, index)
+            childNode = StateNode(newGameState)
+            if newGameState.numberPairs[0][1] == -1 or newGameState.depth == self.maxTreeDepth:
+                childNode.is_end_node = True
+        
             rootNode.addChildNode(childNode)
 
         for childNode in rootNode.getChildrenNodes():
-            self.generateGameTree(childNode)
+            if not childNode.is_end_node:
+               self.generateGameTree(childNode)
 
         return rootNode
 
-    def evaluateGameTree(self, node):
-        if node.gameState.depth == self.maxTreeDepth:
-            return self.evaluateEndNode(node)
-
-        maxPoints = 0
-        for childNode in node.getChildrenNodes():
-            points = self.evaluateGameTree(childNode)
-            if points > maxPoints:
-                maxPoints = points
-
-        return maxPoints
-
+    # Heiristiskā novērtējuma funkcija. 
+    # Vēl jāuzlabo
     def evaluateEndNode(self, node):
+        startingPlayer = self.gameState.startingPlayer
+        heuristic_pair = 0
+        heuristic_odd = 0
+
         if node.gameState.points % 2 == 0:
-            return 1
+            heuristic_pair += 1
+            heuristic_odd -= 1
         else:
-            return -1
+            heuristic_odd += 1
+            heuristic_pair -= 1
+        
+        for pair in node.gameState.numberPairs:
+            if pair[1] != -1 and pair[1] != 0:
+                result = pair[0] + pair[1]
+                if result % 2 == 0:
+                    heuristic_pair += 1
+                    heuristic_odd -= 1
+                else:
+                    heuristic_odd += 1
+                    heuristic_pair -= 1
+
+        if startingPlayer == 0:
+            node.heuristic_value = heuristic_pair 
+        else:
+            node.heuristic_value = heuristic_odd
+
+        return node
+
+    def minmax(self, rootNode, maximizingPlayer):
+        if rootNode.is_end_node:
+            return self.evaluateEndNode(rootNode)
+        if maximizingPlayer:
+            bestHeuristicValue = float('-inf')
+        else:
+            bestHeuristicValue = float('inf')
+
+        bestMove = None
+        for childNode in rootNode.getChildrenNodes():
+            evaluatedNode = self.minmax(childNode, not maximizingPlayer)
+            Logger.info(f"Child node state: {childNode.gameState.numberPairs}")
+            Logger.info(f"Evaluated node: {evaluatedNode.heuristic_value}")
+            
+            if maximizingPlayer:
+                if evaluatedNode.heuristic_value > bestHeuristicValue:
+                    bestHeuristicValue = evaluatedNode.heuristic_value
+                    bestMove = childNode
+            else:
+                if evaluatedNode.heuristic_value < bestHeuristicValue:
+                    bestHeuristicValue = evaluatedNode.heuristic_value
+                    bestMove = childNode
+
+        return bestMove
+
+    def alphaBeta(self, rootNode, maximizingPlayer, alpha, beta):
+        if rootNode.is_end_node:
+            return self.evaluateEndNode(rootNode)
+        if maximizingPlayer:
+            bestHeuristicValue = float('-inf')
+        else:
+            bestHeuristicValue = float('inf')
+            
+        bestMove = None
+        for childNode in rootNode.getChildrenNodes():
+            evaluatedNode = self.alphaBeta(childNode, not maximizingPlayer, alpha, beta)
+            if maximizingPlayer:
+                if evaluatedNode.heuristic_value > bestHeuristicValue:
+                    bestHeuristicValue = evaluatedNode.heuristic_value
+                    alpha = max(alpha, bestHeuristicValue)
+                    bestMove = childNode
+                    if beta <= alpha:
+                        break
+            else:
+                if evaluatedNode.heuristic_value < bestHeuristicValue:
+                    bestHeuristicValue = evaluatedNode.heuristic_value
+                    beta = min(beta, bestHeuristicValue)
+                    bestMove = childNode
+                    if beta <= alpha:
+                        break
+
+        return bestMove
+

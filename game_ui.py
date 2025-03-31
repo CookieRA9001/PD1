@@ -10,7 +10,6 @@ from kivy.config import Config
 from kivy.properties import BoundedNumericProperty
 from AI_player_logic import AIPlayer, GameState;
 from kivy.clock import Clock
-from kivy.logger import Logger
 
 # Kivi aplikācijas iestatījumi
 Config.set('graphics', 'width', '800')
@@ -112,7 +111,7 @@ class GameStateBox(BoxLayout):
 
 # Spēles galvenā "lapa"
 class GamePage(Widget):
-    arrayLength = BoundedNumericProperty(5, min=5, max=25, errorhandler=lambda x: 25 if x > 25 else 5)
+    arrayLength = BoundedNumericProperty(15, min=15, max=25, errorhandler=lambda x: 25 if x > 25 else 15)
     players = ['Cilvēks', 'Dators']
     numberBtns = []
     startingPlayer = 0

@@ -5,6 +5,8 @@
     lastMoveBox: lastMoveBox
     lastMoveNum1: lastMoveNum1
     lastMoveNum2: lastMoveNum2
+    lastMoveSign: lastMoveSign
+    lastMoveResult: lastMoveResult
     color_background: 0.4, 0.2, 0.4, 1 
     color_secondary: 0.25, 0.11, 0.27, 1
     color_button: 0.6, 0.1, 0.2, 0.8
@@ -76,23 +78,53 @@
 
             BoxLayout:
                 orientation: 'horizontal'
-                size_hint: (0.3, 0.5)
+                size_hint: (0.75, 0.5)
                 pos_hint: {'center_x': 0.5, 'center_y': 0.5}
                 padding: 0, 0, 0, 10
 
                 GameButton:
                     id: lastMoveNum1
                     text: "0"
-                    size_hint: (0.5, 1)
-                    font_size: '24sp'
-                    opacity: self.parent.opacity
+                    size_hint: (0.5, 1) if self.visible else (None, 1)
+                    width: 20 if self.visible else 0
+                    font_size: '32sp'
+                    visible: True
+                    opacity: self.parent.opacity if self.visible else 0
                     background_color: 0.6, 0.1, 0.2, 1
+
+                Label:
+                    id: lastMoveSign
+                    text: "+"
+                    size_hint: (0.25, 1)
+                    size_hint: (0.5, 1) if self.visible else (None, 1)
+                    width: 20 if self.visible else 0
+                    font_size: '24sp'
+                    visible: True
+                    opacity: self.parent.opacity if self.visible else 0
 
                 GameButton:
                     id: lastMoveNum2
                     text: "0"
+                    size_hint: (0.5, 1) if self.visible else (None, 1)
+                    width: 20 if self.visible else 0
+                    font_size: '32sp'
+                    visible: True
+                    opacity: self.parent.opacity if self.visible else 0
+                    background_color: 0.6, 0.1, 0.2, 1
+
+                Label:
+                    text: "=>"
                     size_hint: (0.5, 1)
                     font_size: '24sp'
+                    visible: True
+                    opacity: self.parent.opacity if self.visible else 0
+
+                GameButton:
+                    id: lastMoveResult
+                    text: "0"
+                    end: False
+                    size_hint: (1, 1) if self.end else (0.5,1)
+                    font_size: '32sp'
                     opacity: self.parent.opacity
                     background_color: 0.6, 0.1, 0.2, 1
 

@@ -174,23 +174,23 @@ class AIPlayer:
                 if result % 2 == 0:
                     heuristic_pair += 1
                     heuristic_odd -= 1
-                    if result > 6 and result + 1 % 2 == 0:
+                    if result > 6 and node.gameState.points + 1 % 2 == 0:
                         heuristic_pair += 1
                         heuristic_odd -= 1
-                    elif result > 6 and result + 1 % 2 != 0:
+                    elif result > 6 and node.gameState.points + 1 % 2 != 0:
                         heuristic_odd += 1
                         heuristic_pair -= 1
                 else:
                     heuristic_odd += 1
                     heuristic_pair -= 1
-                    if result > 6 and result + 1 % 2 != 0:
+                    if result > 6 and node.gameState.points + 1 % 2 != 0:
                         heuristic_pair += 1
                         heuristic_odd -= 1
-                    elif result > 6 and result + 1 % 2 == 0:
+                    elif result > 6 and node.gameState.points + 1 % 2 == 0:
                         heuristic_odd += 1
                         heuristic_pair -= 1
             elif pair[1] == 0:
-                if result % 2 == 0:
+                if node.gameState.points % 2 == 0:
                     heuristic_pair -= 1
                     heuristic_odd += 1
                 else:

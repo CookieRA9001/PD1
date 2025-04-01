@@ -56,7 +56,6 @@ class AIPlayer:
         self.maxTreeDepth = self.gameState.depth + 3
 
     def findBestMove(self, dt):
-        print("test")
         start = time.time()
 
         if self.algorithm == "MinMax":

@@ -1,4 +1,5 @@
 import copy
+import time
 from kivy.clock import Clock
 
 class StateNode():
@@ -55,15 +56,21 @@ class AIPlayer:
         self.maxTreeDepth = self.gameState.depth + 3
 
     def findBestMove(self, dt):
+        print("test")
+        start = time.time()
+
         if self.algorithm == "MinMax":
             bestMoveNode = self.minmax(self.gameTree, True)
             self.bestMoveIndex = self.gameTree.getChildrenNodes().index(bestMoveNode)
-            return self.bestMoveIndex
-        
-        alpha = float('-inf')
-        beta = float('inf')
-        bestMoveNode = self.alphaBeta(self.gameTree, True, alpha, beta)
-        self.bestMoveIndex = self.gameTree.getChildrenNodes().index(bestMoveNode)
+        else:
+            alpha = float('-inf')
+            beta = float('inf')
+            bestMoveNode = self.alphaBeta(self.gameTree, True, alpha, beta)
+            self.bestMoveIndex = self.gameTree.getChildrenNodes().index(bestMoveNode)
+
+        end = time.time()
+        print(end - start)
+
         return 
 
     def updateGameState(self, newGameState):
